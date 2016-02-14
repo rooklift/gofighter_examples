@@ -8,8 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gofighter"
-	// "github.com/fohristiwhirl/gofighter"		// go get -u github.com/fohristiwhirl/gofighter
+	"github.com/fohristiwhirl/gofighter"		// go get -u github.com/fohristiwhirl/gofighter
 )
 
 const OFFICIAL_URL = "https://api.stockfighter.io/ob/api"
