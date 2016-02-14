@@ -11,6 +11,8 @@ import (
 	"github.com/fohristiwhirl/gofighter"		// go get github.com/fohristiwhirl/gofighter
 )
 
+const OFFICIAL_URL = "https://api.stockfighter.io/ob/api"
+
 var base_url string
 var api_key string
 var order gofighter.RawOrder
@@ -27,6 +29,7 @@ func init() {
 	functions["heartbeat"] = heartbeat
 	functions["print"] = print
 	functions["local"] = local
+	functions["official"] = official
 	functions["account"] = account
 	functions["venue"] = venue
 	functions["symbol"] = symbol
@@ -50,8 +53,8 @@ func init() {
 }
 
 func init() {
-	base_url = "https://api.stockfighter.io/ob/api"
-	
+	base_url = OFFICIAL_URL
+
 	var err error
 	api_key, err = gofighter.LoadAPIKey("api_key.txt")
 	if err != nil {
@@ -167,6 +170,11 @@ func print(args []string)  {
 
 func local(args []string)  {
 	base_url = "http://127.0.0.1:8000/ob/api"
+	print_url()
+}
+
+func official(args []string)  {
+	base_url = OFFICIAL_URL
 	print_url()
 }
 
