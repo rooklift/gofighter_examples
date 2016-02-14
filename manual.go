@@ -28,6 +28,9 @@ func init() {
 	functions["quote"] = quote
 	functions["orderbook"] = orderbook
 	functions["heartbeat"] = heartbeat
+	functions["checkvenue"] = checkvenue
+	functions["venues"] = venues
+	functions["stocks"] = stocks
 	functions["print"] = print
 	functions["local"] = local
 	functions["official"] = official
@@ -165,6 +168,33 @@ func orderbook(args []string)  {
 
 func heartbeat(args []string)  {
 	result, err := gofighter.CheckAPI(base_url, api_key)
+	print_error_or_json(result, err)
+}
+
+func checkvenue(args []string)  {
+	var venue string
+	if len(args) == 2 {
+		venue = string(args[1])
+	} else {
+		venue = order.Venue
+	}
+	result, err := gofighter.CheckVenue(base_url, api_key, venue)
+	print_error_or_json(result, err)
+}
+
+func venues(args []string)  {
+	result, err := gofighter.GetVenueList(base_url, api_key)
+	print_error_or_json(result, err)
+}
+
+func stocks(args []string)  {
+	var venue string
+	if len(args) == 2 {
+		venue = string(args[1])
+	} else {
+		venue = order.Venue
+	}
+	result, err := gofighter.GetStockList(base_url, api_key, venue)
 	print_error_or_json(result, err)
 }
 
