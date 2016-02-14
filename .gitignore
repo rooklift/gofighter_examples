@@ -1,6 +1,11 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 
+
 *api_key*
 *.exe
 *.lnk
+
+
+# "Secret" projects...
+arbitrage.go
