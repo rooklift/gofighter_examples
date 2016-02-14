@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fohristiwhirl/gofighter"		// go get -u github.com/fohristiwhirl/gofighter
+	"gofighter"
+	// "github.com/fohristiwhirl/gofighter"		// go get -u github.com/fohristiwhirl/gofighter
 )
 
 const OFFICIAL_URL = "https://api.stockfighter.io/ob/api"
@@ -19,12 +20,14 @@ var order gofighter.RawOrder
 var functions map[string]func([]string)
 var extrahelp map[string]string
 
-func init() {
+func init()  {
 	functions = make(map[string]func([]string))
 	functions["help"] = help
 	functions["execute"] = execute
 	functions["cancel"] = cancel
 	functions["status"] = status
+	functions["statusall"] = statusall
+	functions["statusstock"] = statusstock
 	functions["quote"] = quote
 	functions["orderbook"] = orderbook
 	functions["heartbeat"] = heartbeat
@@ -56,7 +59,7 @@ func init() {
 	extrahelp["execute"] = "   <---- execute order with current settings"
 }
 
-func init() {
+func init()  {
 	base_url = OFFICIAL_URL
 
 	var err error
@@ -85,7 +88,7 @@ func getlist()  []string {
 	return strings.Fields(line)
 }
 
-func print_error_or_json(in interface{}, err error) {
+func print_error_or_json(in interface{}, err error)  {
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -93,11 +96,11 @@ func print_error_or_json(in interface{}, err error) {
 	gofighter.PrintJSON(in)
 }
 
-func print_url() {
+func print_url()  {
 	fmt.Printf("[URL : %s]\n", base_url)
 }
 
-func print_key() {
+func print_key()  {
 	fmt.Printf("[KEY : %s]\n", api_key)
 }
 
@@ -156,6 +159,16 @@ func status(args []string)  {
 	print_error_or_json(result, err)
 }
 
+func statusall(args []string)  {
+	result, err := gofighter.StatusAllOrders(base_url, api_key, order.Venue, order.Account)
+	print_error_or_json(result, err)
+}
+
+func statusstock(args []string)  {
+	result, err := gofighter.StatusAllOrdersOneStock(base_url, api_key, order.Venue, order.Account, order.Symbol)
+	print_error_or_json(result, err)
+}
+
 func quote(args []string)  {
 	result, err := gofighter.GetQuote(base_url, api_key, order.Venue, order.Symbol)
 	print_error_or_json(result, err)
@@ -207,7 +220,7 @@ func print(args []string)  {
 func local(args []string)  {
 	var port int = 8000
 	var err error
-	
+
 	if len(args) == 2 {
 		port, err = strconv.Atoi(args[1])
 		if err != nil {
