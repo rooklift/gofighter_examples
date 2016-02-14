@@ -42,7 +42,9 @@ func init()  {
 	functions["stock"] = symbol
 	functions["direction"] = direction
 	functions["buy"] = buy
+	functions["bid"] = buy
 	functions["sell"] = sell
+	functions["ask"] = sell
 	functions["ordertype"] = ordertype
 	functions["limit"] = limit
 	functions["market"] = market
@@ -341,7 +343,36 @@ func url(args []string)  {
 
 // ----------------------------------------------------------------------------------------------
 
-func main() {
+func set_price_directly(s string)  {		// Called if the user types "$43.20" or similar
+	var dollars int
+	var cents int
+
+	n := s[1:]
+	dollars_and_cents := strings.Split(string(n), ".")
+
+	dollars, _ = strconv.Atoi(dollars_and_cents[0])
+
+	if len(dollars_and_cents) > 1 {
+		cent_str := dollars_and_cents[1]
+		if len(cent_str) > 2 {
+			cent_str = cent_str[:2]
+		}
+		if len(cent_str) == 1 {
+			cent_str += "0"
+		}
+		cents, _ = strconv.Atoi(cent_str)
+	}
+
+	order.Price = dollars * 100 + cents
+	fmt.Printf("Price: %d\n", order.Price)
+}
+
+func set_qty_directly(s string)  {		// Called if the user types "200" or similar
+	order.Qty, _ = strconv.Atoi(s)
+	fmt.Printf("Qty: %d\n", order.Qty)
+}
+
+func main()  {
 	for {
 		fmt.Printf("> ")
 		ls := getlist()
@@ -351,6 +382,17 @@ func main() {
 		fn, ok := functions[command]
 		if ok {
 			fn(ls)
+			continue
+		}
+
+		if command[0] == '$' {
+			set_price_directly(string(command))
+			continue
+		}
+
+		if command[0] >= '0' && command[0] <= '9' {
+			set_qty_directly(string(command))
+			continue
 		}
 	}
 }
