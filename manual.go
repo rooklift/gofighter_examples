@@ -205,7 +205,16 @@ func print(args []string)  {
 }
 
 func local(args []string)  {
-	base_url = "http://127.0.0.1:8000/ob/api"
+	var port int = 8000
+	var err error
+	
+	if len(args) == 2 {
+		port, err = strconv.Atoi(args[1])
+		if err != nil {
+			port = 8000
+		}
+	}
+	base_url = fmt.Sprintf("http://127.0.0.1:%d/ob/api", port)
 	print_url()
 }
 
