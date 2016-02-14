@@ -1,8 +1,10 @@
 package main
 
+// This example opens an executions websocket and prints the current position any time it changes
+// (note that on the test exchange, there is only one account and the net position always becomes 0)
+
 import (
 	"fmt"
-	"encoding/json"
 
 	"github.com/fohristiwhirl/gofighter"
 )
@@ -20,14 +22,12 @@ const (
 
 func main() {
 
-	tracker_results := make(chan gofighter.Execution, 64)
-	go gofighter.Tracker(WS_URL, ACCOUNT, VENUE, SYMBOL, tracker_results)
+	position_channel := make(chan gofighter.Position, 64)
+	go gofighter.PositionUpdater(WS_URL, ACCOUNT, VENUE, SYMBOL, nil, nil, position_channel)
 
 	for n := 0 ; ; n++ {
-		msg := <- tracker_results
-		fmt.Printf("%d ", n)
-		s, _ := json.MarshalIndent(msg, "", "  ")
-		fmt.Println(string(s))
+		newpos := <- position_channel
+		fmt.Printf("%d: Shares: %d, Cents: %d\n", n, newpos.Shares, newpos.Cents)
 	}
 
 	return
