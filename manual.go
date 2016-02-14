@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fohristiwhirl/gofighter"		// go get github.com/fohristiwhirl/gofighter
+	"github.com/fohristiwhirl/gofighter"		// go get -u github.com/fohristiwhirl/gofighter
 )
 
 const OFFICIAL_URL = "https://api.stockfighter.io/ob/api"
@@ -26,6 +26,7 @@ func init() {
 	functions["cancel"] = cancel
 	functions["status"] = status
 	functions["quote"] = quote
+	functions["orderbook"] = orderbook
 	functions["heartbeat"] = heartbeat
 	functions["print"] = print
 	functions["local"] = local
@@ -154,6 +155,11 @@ func status(args []string)  {
 
 func quote(args []string)  {
 	result, err := gofighter.GetQuote(base_url, api_key, order.Venue, order.Symbol)
+	print_error_or_json(result, err)
+}
+
+func orderbook(args []string)  {
+	result, err := gofighter.GetOrderbook(base_url, api_key, order.Venue, order.Symbol)
 	print_error_or_json(result, err)
 }
 
