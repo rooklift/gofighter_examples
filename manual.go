@@ -13,9 +13,9 @@ import (
 
 const OFFICIAL_URL = "https://api.stockfighter.io/ob/api"
 
-var base_url string
-var api_key string
-var order gofighter.RawOrder
+var order gofighter.ShortOrder
+var info gofighter.TradingInfo
+
 var functions map[string]func([]string)
 var extrahelp map[string]string
 
@@ -61,17 +61,21 @@ func init()  {
 }
 
 func init()  {
-	base_url = OFFICIAL_URL
-
 	var err error
-	api_key, err = gofighter.LoadAPIKey("api_key.txt")
+
+	// Info stores info about our relationship with the server...
+
+	info.BaseURL = OFFICIAL_URL
+	info.ApiKey, err = gofighter.LoadAPIKey("api_key.txt")
 	if err != nil {
 		fmt.Println(err)
 	}
+	info.Account = "EXB123456"
+	info.Venue = "TESTEX"
+	info.Symbol = "FOOBAR"
 
-	order.Account = "EXB123456"
-	order.Venue = "TESTEX"
-	order.Symbol = "FOOBAR"
+	// Order can also hold some of those, but we only worry about this stuff...
+
 	order.Direction = "buy"
 	order.OrderType = "limit"
 	order.Qty = 100
@@ -98,11 +102,11 @@ func print_error_or_json(in interface{}, err error)  {
 }
 
 func print_url()  {
-	fmt.Printf("[URL : %s]\n", base_url)
+	fmt.Printf("[URL : %s]\n", info.BaseURL)
 }
 
 func print_key()  {
-	fmt.Printf("[KEY : %s]\n", api_key)
+	fmt.Printf("[KEY : %s]\n", info.ApiKey)
 }
 
 // ----------------------------------------------------------------------------------------------
@@ -126,7 +130,7 @@ func help(args []string)  {
 }
 
 func execute(args []string)  {
-	result, err := gofighter.Execute(base_url, api_key, order, nil)
+	result, err := gofighter.Execute(info, order, nil)
 	print_error_or_json(result, err)
 }
 
@@ -141,7 +145,7 @@ func cancel(args []string)  {
 		return
 	}
 
-	result, err := gofighter.Cancel(base_url, api_key, order.Venue, order.Symbol, id)
+	result, err := gofighter.Cancel(info, id)
 	print_error_or_json(result, err)
 }
 
@@ -156,66 +160,53 @@ func status(args []string)  {
 		return
 	}
 
-	result, err := gofighter.GetStatus(base_url, api_key, order.Venue, order.Symbol, id)
+	result, err := gofighter.GetStatus(info, id)
 	print_error_or_json(result, err)
 }
 
 func statusall(args []string)  {
-	result, err := gofighter.StatusAllOrders(base_url, api_key, order.Venue, order.Account)
+	result, err := gofighter.StatusAllOrders(info)
 	print_error_or_json(result, err)
 }
 
 func statusstock(args []string)  {
-	result, err := gofighter.StatusAllOrdersOneStock(base_url, api_key, order.Venue, order.Account, order.Symbol)
+	result, err := gofighter.StatusAllOrdersOneStock(info)
 	print_error_or_json(result, err)
 }
 
 func quote(args []string)  {
-	result, err := gofighter.GetQuote(base_url, api_key, order.Venue, order.Symbol)
+	result, err := gofighter.GetQuote(info)
 	print_error_or_json(result, err)
 }
 
 func orderbook(args []string)  {
-	result, err := gofighter.GetOrderbook(base_url, api_key, order.Venue, order.Symbol)
+	result, err := gofighter.GetOrderbook(info)
 	print_error_or_json(result, err)
 }
 
 func heartbeat(args []string)  {
-	result, err := gofighter.CheckAPI(base_url, api_key)
+	result, err := gofighter.CheckAPI(info)
 	print_error_or_json(result, err)
 }
 
 func checkvenue(args []string)  {
-	var venue string
-	if len(args) == 2 {
-		venue = string(args[1])
-	} else {
-		venue = order.Venue
-	}
-	result, err := gofighter.CheckVenue(base_url, api_key, venue)
+	result, err := gofighter.CheckVenue(info)
 	print_error_or_json(result, err)
 }
 
 func venues(args []string)  {
-	result, err := gofighter.GetVenueList(base_url, api_key)
+	result, err := gofighter.GetVenueList(info)
 	print_error_or_json(result, err)
 }
 
 func stocks(args []string)  {
-	var venue string
-	if len(args) == 2 {
-		venue = string(args[1])
-	} else {
-		venue = order.Venue
-	}
-	result, err := gofighter.GetStockList(base_url, api_key, venue)
+	result, err := gofighter.GetStockList(info)
 	print_error_or_json(result, err)
 }
 
 func print(args []string)  {
+	gofighter.PrintJSON(info)
 	gofighter.PrintJSON(order)
-	print_url()
-	print_key()
 }
 
 func local(args []string)  {
@@ -228,34 +219,34 @@ func local(args []string)  {
 			port = 8000
 		}
 	}
-	base_url = fmt.Sprintf("http://127.0.0.1:%d/ob/api", port)
+	info.BaseURL = fmt.Sprintf("http://127.0.0.1:%d/ob/api", port)
 	print_url()
 }
 
 func official(args []string)  {
-	base_url = OFFICIAL_URL
+	info.BaseURL = OFFICIAL_URL
 	print_url()
 }
 
 func account(args []string)  {
 	if len(args) == 2 {
-		order.Account = string(args[1])
+		info.Account = string(args[1])
 	}
-	fmt.Printf("Account: %s\n", order.Account)
+	fmt.Printf("Account: %s\n", info.Account)
 }
 
 func venue(args []string)  {
 	if len(args) == 2 {
-		order.Venue = string(args[1])
+		info.Venue = string(args[1])
 	}
-	fmt.Printf("Venue: %s\n", order.Venue)
+	fmt.Printf("Venue: %s\n", info.Venue)
 }
 
 func symbol(args []string)  {
 	if len(args) == 2 {
-		order.Symbol = string(args[1])
+		info.Symbol = string(args[1])
 	}
-	fmt.Printf("Symbol: %s\n", order.Symbol)
+	fmt.Printf("Symbol: %s\n", info.Symbol)
 }
 
 func direction(args []string)  {
@@ -318,24 +309,24 @@ func price(args []string)  {
 
 func key(args []string)  {
 	if len(args) == 2 {
-		api_key = string(args[1])
+		info.ApiKey = string(args[1])
 	}
 	print_key()
 }
 
 func url(args []string)  {
 	if len(args) == 2 {
-		base_url = string(args[1])
+		info.BaseURL = string(args[1])
 		for {							// Remove trailing slashes
-			if len(base_url) > 0 && base_url[len(base_url) - 1] == '/' {
-				base_url = base_url[:len(base_url) - 1]
+			if len(info.BaseURL) > 0 && info.BaseURL[len(info.BaseURL) - 1] == '/' {
+				info.BaseURL = info.BaseURL[:len(info.BaseURL) - 1]
 			} else {
 				break
 			}
 		}								// Insert "http://"
-		if strings.Index(base_url, "http://") == -1 && strings.Index(base_url, "https://") == -1 {
+		if strings.Index(info.BaseURL, "http://") == -1 && strings.Index(info.BaseURL, "https://") == -1 {
 			fmt.Println("WARNING: No protocol specified, inserting http:// (not https, set that manually if needed)")
-			base_url = "http://" + base_url
+			info.BaseURL = "http://" + info.BaseURL
 		}
 	}
 	print_url()
