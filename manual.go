@@ -55,32 +55,14 @@ func init()  {
 	functions["key"] = key
 	functions["url"] = url
 	functions["load"] = load
+	functions["reset"] = reset
 
 	extrahelp = make(map[string]string)
 	extrahelp["print"] = "     <---- print current settings"
 	extrahelp["execute"] = "   <---- execute order with current settings"
-}
 
-func init()  {
-	var err error
-
-	// Info stores info about our relationship with the server...
-
-	info.BaseURL = OFFICIAL_URL
-	info.ApiKey, err = gofighter.LoadAPIKey("api_key.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
-	info.Account = "EXB123456"
-	info.Venue = "TESTEX"
-	info.Symbol = "FOOBAR"
-
-	// Order can also hold some of those, but we only worry about this stuff...
-
-	order.Direction = "buy"
-	order.OrderType = "limit"
-	order.Qty = 100
-	order.Price = 5000
+	var args []string
+	reset(args)
 }
 
 func getline()  string {
@@ -337,6 +319,25 @@ func load(args []string)  {
 	levelname := gofighter.NameFromUser()
 	info = gofighter.TradingInfoFromName(levelname)
 	gofighter.PrintJSON(info)
+}
+
+func reset(args []string)  {
+	var err error
+	info.BaseURL = OFFICIAL_URL
+	info.ApiKey, err = gofighter.LoadAPIKey("api_key.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+	info.Account = "EXB123456"
+	info.Venue = "TESTEX"
+	info.Symbol = "FOOBAR"
+	order.Direction = "buy"
+	order.OrderType = "limit"
+	order.Qty = 100
+	order.Price = 5000
+
+	gofighter.PrintJSON(info)
+	gofighter.PrintJSON(order)
 }
 
 // ----------------------------------------------------------------------------------------------
