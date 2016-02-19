@@ -54,6 +54,7 @@ func init()  {
 	functions["price"] = price
 	functions["key"] = key
 	functions["url"] = url
+	functions["load"] = load
 
 	extrahelp = make(map[string]string)
 	extrahelp["print"] = "     <---- print current settings"
@@ -330,6 +331,12 @@ func url(args []string)  {
 		}
 	}
 	print_url()
+}
+
+func load(args []string)  {
+	levelname := gofighter.NameFromUser()
+	info = gofighter.TradingInfoFromName(levelname)
+	gofighter.PrintJSON(info)
 }
 
 // ----------------------------------------------------------------------------------------------
