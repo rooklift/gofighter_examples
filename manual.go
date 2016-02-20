@@ -60,6 +60,7 @@ func init()  {
 	extrahelp = make(map[string]string)
 	extrahelp["print"] = "     <---- print current settings"
 	extrahelp["execute"] = "   <---- execute order with current settings"
+	extrahelp["load"] = "      <---- load info from a saved GM result from game_start.exe"
 
 	var args []string
 	reset(args)
