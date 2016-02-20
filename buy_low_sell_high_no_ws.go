@@ -34,7 +34,7 @@ type Market struct {
 
 func (m * Market) Init(info gofighter.TradingInfo)  {
     m.Ticker = make(chan gofighter.Quote, 256)
-    go fake_ticker(info, m.Ticker)
+    go gofighter.FakeTicker(info, m.Ticker)
 
     m.Info = info
     m.LastPrice = -1
@@ -74,20 +74,6 @@ func (m * Market) Update()  int {
     }
 
     return count
-}
-
-func fake_ticker(info gofighter.TradingInfo, quotes_chan chan gofighter.Quote)  {
-
-    // Poor man's tickertape without WebSockets...
-
-    for {
-        res, err := gofighter.GetQuote(info)
-        if err != nil {
-            continue
-        }
-        quotes_chan <- res
-        time.Sleep(500 * time.Millisecond)
-    }
 }
 
 func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, moves_chan chan gofighter.Movement) {

@@ -9,21 +9,18 @@ import (
 	"github.com/fohristiwhirl/gofighter"
 )
 
-const (
-	BASE_URL = "https://api.stockfighter.io/ob/api"
-	WS_URL   = "wss://api.stockfighter.io/ob/api/ws"
-	// BASE_URL = "http://127.0.0.1:8000/ob/api"
-	// WS_URL   = "ws://127.0.0.1:8000/ob/api/ws"
-
-	ACCOUNT = "EXB123456"
-	VENUE = "TESTEX"
-	SYMBOL = "FOOBAR"
-)
+var INFO gofighter.TradingInfo = gofighter.TradingInfo{
+	BaseURL: "https://api.stockfighter.io/ob/api",
+	WebSocketURL: "wss://api.stockfighter.io/ob/api/ws",
+	Account: "EXB123456",
+	Venue: "TESTEX",
+	Symbol: "FOOBAR",
+}
 
 func main() {
 
 	position_channel := make(chan gofighter.Position, 64)
-	go gofighter.PositionUpdater(WS_URL, ACCOUNT, VENUE, SYMBOL, nil, nil, position_channel)
+	go gofighter.PositionUpdater(INFO, nil, nil, position_channel)
 
 	for n := 0 ; ; n++ {
 		newpos := <- position_channel

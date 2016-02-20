@@ -7,21 +7,18 @@ import (
 	"github.com/fohristiwhirl/gofighter"
 )
 
-const (
-	BASE_URL = "https://api.stockfighter.io/ob/api"
-	WS_URL   = "wss://api.stockfighter.io/ob/api/ws"
-	// BASE_URL = "http://127.0.0.1:8000/ob/api"
-	// WS_URL   = "ws://127.0.0.1:8000/ob/api/ws"
-
-	ACCOUNT = "EXB123456"
-	VENUE = "TESTEX"
-	SYMBOL = "FOOBAR"
-)
+var INFO gofighter.TradingInfo = gofighter.TradingInfo{
+	BaseURL: "https://api.stockfighter.io/ob/api",
+	WebSocketURL: "wss://api.stockfighter.io/ob/api/ws",
+	Account: "EXB123456",
+	Venue: "TESTEX",
+	Symbol: "FOOBAR",
+}
 
 func main() {
 
 	ticker_results := make(chan gofighter.Quote, 64)
-	go gofighter.Ticker(WS_URL, ACCOUNT, VENUE, SYMBOL, ticker_results)
+	go gofighter.Ticker(INFO, ticker_results)
 
 	for n := 0 ; ; n++ {
 		msg := <- ticker_results

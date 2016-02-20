@@ -35,7 +35,7 @@ type Market struct {
 
 func (m * Market) Init(info gofighter.TradingInfo)  {
     m.Ticker = make(chan gofighter.Quote, 256)
-    go gofighter.Ticker(info.WebSocketURL, info.Account, info.Venue, info.Symbol, m.Ticker)
+    go gofighter.Ticker(info, m.Ticker)
 
     m.Info = info
     m.LastPrice = -1
@@ -106,7 +106,7 @@ func main() {
     market.Init(info)
 
     // Spin off a seperate thread to update the position via an executions WebSocket...
-    go gofighter.PositionUpdater(info.WebSocketURL, info.Account, info.Venue, info.Symbol, &unsafe_pos, nil, nil)
+    go gofighter.PositionUpdater(info, &unsafe_pos, nil, nil)
 
     order.OrderType = "limit"
 
