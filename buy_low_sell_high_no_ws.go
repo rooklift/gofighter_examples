@@ -9,7 +9,6 @@ package main
 import (
     "fmt"
     "math/rand"
-    "sync"
     "time"
 
     "github.com/fohristiwhirl/gofighter"        // go get -u github.com/fohristiwhirl/gofighter
@@ -23,15 +22,9 @@ const (
     BASE_URL = "http://127.0.0.1:8000/ob/api"   // No trailing slashes please
 )
 
-type SimplePosition struct {
-    Lock    sync.Mutex
-    Shares  int
-    Cents   int
-}
-
 // -----------------------------------------------------------------------------------------------
 
-func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, unsafe_pos * SimplePosition) {
+func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, unsafe_pos * gofighter.SimplePosition) {
     res, err := gofighter.Execute(info, order, nil)
     if err != nil {
         fmt.Println(err)
@@ -67,7 +60,7 @@ func main() {
     var market gofighter.Market
     market.Init(info, gofighter.FakeTicker)     // The FakeTicker uses Quotes instead of WS
 
-    var unsafe_pos SimplePosition
+    var unsafe_pos gofighter.SimplePosition
 
     for {
         market.Update()
@@ -82,9 +75,7 @@ func main() {
         pos := unsafe_pos
         unsafe_pos.Lock.Unlock()
 
-        nav := pos.Cents + (pos.Shares * market.LastPrice)
-
-        fmt.Printf("Shares: %d, Dollars: $%d, NAV: $%d\n", pos.Shares, pos.Cents / 100, nav / 100)
+        pos.Print(market.LastPrice)
 
         var order gofighter.ShortOrder
         order.OrderType = "limit"
