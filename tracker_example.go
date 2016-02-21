@@ -1,7 +1,6 @@
 package main
 
-// This example opens an executions websocket and prints the current position any time it changes
-// (note that on the test exchange, there is only one account and the net position always becomes 0)
+// This example opens an executions websocket and prints events from it...
 
 import (
 	"fmt"
@@ -19,12 +18,13 @@ var INFO gofighter.TradingInfo = gofighter.TradingInfo{
 
 func main() {
 
-	position_channel := make(chan gofighter.Position, 64)
-	go gofighter.PositionUpdater(INFO, nil, nil, position_channel)
+	ex_chan := make(chan gofighter.Execution)
+
+	go gofighter.Tracker(INFO, ex_chan)
 
 	for n := 0 ; ; n++ {
-		newpos := <- position_channel
-		fmt.Printf("%d: Shares: %d, Cents: %d\n", n, newpos.Shares, newpos.Cents)
+		msg := <- ex_chan
+		fmt.Printf("%s %s %d @ %d\n", msg.Account, msg.Order.Direction, msg.Filled, msg.Price)
 	}
 
 	return

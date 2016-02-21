@@ -47,16 +47,11 @@ func main() {
         WebSocketURL: WS_URL,
     }
 
-    var unsafe_pos gofighter.Position
-    var order gofighter.ShortOrder
-
     var market gofighter.Market
     market.Init(info, gofighter.Ticker)
 
-    // Spin off a seperate thread to update the position via an executions WebSocket...
-    go gofighter.PositionUpdater(info, &unsafe_pos, nil, nil)
-
-    order.OrderType = "limit"
+    var pos gofighter.Position
+    pos.Init(info)
 
     for {
         market.Update()
@@ -67,16 +62,15 @@ func main() {
             continue
         }
 
-        unsafe_pos.Lock.Lock()
-        pos := unsafe_pos
-        unsafe_pos.Lock.Unlock()
+        pos.Update()
 
         nav := pos.Cents + (pos.Shares * market.LastPrice)
 
         fmt.Printf("Shares: %d, Dollars: $%d, NAV: $%d\n", pos.Shares, pos.Cents / 100, nav / 100)
 
+        var order gofighter.ShortOrder
+        order.OrderType = "limit"
         order.Qty = 50 + rand.Intn(50)
-
         if pos.Shares > 0 || (pos.Shares == 0 && rand.Intn(2) == 0) {
             order.Direction = "sell"
             order.Price = market.LastPrice + 50
@@ -84,7 +78,6 @@ func main() {
             order.Direction = "buy"
             order.Price = market.LastPrice - 50
         }
-
         if order.Price < 0 {
             order.Price = 0
         }

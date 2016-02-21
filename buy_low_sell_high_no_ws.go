@@ -9,6 +9,7 @@ package main
 import (
     "fmt"
     "math/rand"
+    "sync"
     "time"
 
     "github.com/fohristiwhirl/gofighter"        // go get -u github.com/fohristiwhirl/gofighter
@@ -21,6 +22,12 @@ const (
     KEY = "blshkey"
     BASE_URL = "http://127.0.0.1:8000/ob/api"   // No trailing slashes please
 )
+
+type SimplePosition struct {
+    Lock    sync.Mutex
+    Shares  int
+    Cents   int
+}
 
 // -----------------------------------------------------------------------------------------------
 
@@ -41,7 +48,11 @@ func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, mo
     moves_chan <- move
 }
 
-func pos_updater(unsafe_pos * gofighter.Position, moves_chan chan gofighter.Movement) {
+func pos_updater(unsafe_pos * SimplePosition, moves_chan chan gofighter.Movement) {
+
+    // Goroutine constantly updating the position *in shared memory*
+    // from the channel (which has messages from cancels coming in).
+
     for {
         move := <- moves_chan
         unsafe_pos.Lock.Lock()
@@ -61,16 +72,12 @@ func main() {
         BaseURL: BASE_URL,
     }
 
-    var unsafe_pos gofighter.Position
-    var order gofighter.ShortOrder
-
     var market gofighter.Market
-    market.Init(info, gofighter.FakeTicker)
+    market.Init(info, gofighter.FakeTicker)     // The FakeTicker uses Quotes instead of WS
 
+    var unsafe_pos SimplePosition
     moves_chan := make(chan gofighter.Movement)
     go pos_updater(&unsafe_pos, moves_chan)
-
-    order.OrderType = "limit"
 
     for {
         market.Update()
@@ -89,8 +96,9 @@ func main() {
 
         fmt.Printf("Shares: %d, Dollars: $%d, NAV: $%d\n", pos.Shares, pos.Cents / 100, nav / 100)
 
+        var order gofighter.ShortOrder
+        order.OrderType = "limit"
         order.Qty = 50 + rand.Intn(50)
-
         if pos.Shares > 0 || (pos.Shares == 0 && rand.Intn(2) == 0) {
             order.Direction = "sell"
             order.Price = market.LastPrice + 50
@@ -98,7 +106,6 @@ func main() {
             order.Direction = "buy"
             order.Price = market.LastPrice - 50
         }
-
         if order.Price < 0 {
             order.Price = 0
         }
