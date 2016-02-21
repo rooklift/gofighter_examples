@@ -47,14 +47,14 @@ func main() {
         WebSocketURL: WS_URL,
     }
 
-    var market gofighter.Market
-    market.Init(info, gofighter.Ticker)
+    market_queries := make(chan chan gofighter.Market)
+    go gofighter.MarketWatch(info, market_queries)
 
-    var pos gofighter.Position
-    pos.Init(info)
+    position_queries := make(chan chan gofighter.Position)
+    go gofighter.PositionWatch(info, position_queries)
 
     for {
-        market.Update()
+        market := gofighter.GetMarket(market_queries)
 
         if market.LastPrice < 0 {
             fmt.Printf("Waiting for market action to start...\n")
@@ -62,7 +62,7 @@ func main() {
             continue
         }
 
-        pos.Update()
+        pos := gofighter.GetPosition(position_queries)
 
         pos.Print(market.LastPrice)
 
