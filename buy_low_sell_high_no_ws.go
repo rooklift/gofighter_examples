@@ -31,7 +31,7 @@ type SimplePosition struct {
 
 // -----------------------------------------------------------------------------------------------
 
-func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, moves_chan chan gofighter.Movement) {
+func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, unsafe_pos * SimplePosition) {
     res, err := gofighter.Execute(info, order, nil)
     if err != nil {
         fmt.Println(err)
@@ -45,21 +45,13 @@ func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, mo
         return
     }
     move := gofighter.MoveFromOrder(res)
-    moves_chan <- move
-}
 
-func pos_updater(unsafe_pos * SimplePosition, moves_chan chan gofighter.Movement) {
+    // Update the position (which is in shared memory)....
 
-    // Goroutine constantly updating the position *in shared memory*
-    // from the channel (which has messages from cancels coming in).
-
-    for {
-        move := <- moves_chan
-        unsafe_pos.Lock.Lock()
-        unsafe_pos.Cents += move.Cents
-        unsafe_pos.Shares += move.Shares
-        unsafe_pos.Lock.Unlock()
-    }
+    unsafe_pos.Lock.Lock()
+    unsafe_pos.Cents += move.Cents
+    unsafe_pos.Shares += move.Shares
+    unsafe_pos.Lock.Unlock()
 }
 
 func main() {
@@ -76,8 +68,6 @@ func main() {
     market.Init(info, gofighter.FakeTicker)     // The FakeTicker uses Quotes instead of WS
 
     var unsafe_pos SimplePosition
-    moves_chan := make(chan gofighter.Movement)
-    go pos_updater(&unsafe_pos, moves_chan)
 
     for {
         market.Update()
@@ -110,7 +100,7 @@ func main() {
             order.Price = 0
         }
 
-        go order_and_cancel(info, order, moves_chan)
+        go order_and_cancel(info, order, &unsafe_pos)
 
         time.Sleep(500 * time.Millisecond)
     }
