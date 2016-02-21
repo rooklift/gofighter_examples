@@ -4,7 +4,9 @@ gm/
 *.exe
 *.lnk
 
-
 # "Secret" projects...
 arbitrage.go
 mm.go
+
+# Can I have this differ in local and on the repo?
+known_levels.json
