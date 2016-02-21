@@ -22,59 +22,7 @@ const (
     BASE_URL = "http://127.0.0.1:8000/ob/api"   // No trailing slashes please
 )
 
-type Market struct {
-    Info            gofighter.TradingInfo
-    LastPrice       int
-    Bid             int
-    Ask             int
-    Ticker          chan gofighter.Quote
-}
-
 // -----------------------------------------------------------------------------------------------
-
-func (m * Market) Init(info gofighter.TradingInfo)  {
-    m.Ticker = make(chan gofighter.Quote, 256)
-    go gofighter.FakeTicker(info, m.Ticker)
-
-    m.Info = info
-    m.LastPrice = -1
-    m.Bid = -1
-    m.Ask = -1
-}
-
-func int_or_minus_one_from_ptr(ptr * int)  int {
-    if ptr == nil {
-        return -1
-    }
-    return *ptr
-}
-
-func (m * Market) Update()  int {
-
-    // Update the market from the WebSocket results channel.
-    // Return the number of WebSocket messages read.
-
-    var count int
-
-    loop:
-    for {
-        select {
-
-            case q := <- m.Ticker:
-
-                count++
-
-                m.Bid = int_or_minus_one_from_ptr(q.Bid)
-                m.Ask = int_or_minus_one_from_ptr(q.Ask)
-                m.LastPrice = int_or_minus_one_from_ptr(q.Last)
-
-            default:
-                break loop
-        }
-    }
-
-    return count
-}
 
 func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder, moves_chan chan gofighter.Movement) {
     res, err := gofighter.Execute(info, order, nil)
@@ -116,11 +64,10 @@ func main() {
     var unsafe_pos gofighter.Position
     var order gofighter.ShortOrder
 
-    var market Market
-    market.Init(info)
+    var market gofighter.Market
+    market.Init(info, gofighter.FakeTicker)
 
     moves_chan := make(chan gofighter.Movement)
-
     go pos_updater(&unsafe_pos, moves_chan)
 
     order.OrderType = "limit"
@@ -128,7 +75,7 @@ func main() {
     for {
         market.Update()
 
-        if market.LastPrice <= 0 {
+        if market.LastPrice < 0 {
             fmt.Printf("Waiting for market action to start...\n")
             time.Sleep(1 * time.Second)
             continue
