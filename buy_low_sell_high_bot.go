@@ -47,6 +47,10 @@ func main() {
         WebSocketURL: WS_URL,
     }
 
+    // The market and position will be watched by 2 goroutines. In order to get info
+    // back from them, we create 2 channels that we can use to request the current
+    // state from them. We request the state by sending... a channel, of course.
+
     market_queries := make(chan chan gofighter.Market)
     go gofighter.MarketWatch(info, market_queries)
 
@@ -54,15 +58,15 @@ func main() {
     go gofighter.PositionWatch(info, position_queries)
 
     for {
-        market := gofighter.GetMarket(market_queries)
-
+        market := gofighter.GetMarket(market_queries)   // Behind the scenes, this sends a channel
+                                                        // and gets the response through it.
         if market.LastPrice < 0 {
             fmt.Printf("Waiting for market action to start...\n")
             time.Sleep(1 * time.Second)
             continue
         }
 
-        pos := gofighter.GetPosition(position_queries)
+        pos := gofighter.GetPosition(position_queries)  // So does this.
 
         pos.Print(market.LastPrice)
 
