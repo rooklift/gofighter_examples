@@ -64,9 +64,7 @@ func main() {
 
         pos.Update()
 
-        nav := pos.Cents + (pos.Shares * market.LastPrice)
-
-        fmt.Printf("Shares: %d, Dollars: $%d, NAV: $%d\n", pos.Shares, pos.Cents / 100, nav / 100)
+        pos.Print(market.LastPrice)
 
         var order gofighter.ShortOrder
         order.OrderType = "limit"
