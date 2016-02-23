@@ -317,7 +317,7 @@ func url(args []string)  {
 }
 
 func load(args []string)  {
-	info := gofighter.GetUserSelection("known_levels.json")
+	info = gofighter.GetUserSelection("known_levels.json")
 	gofighter.PrintJSON(info)
 }
 
