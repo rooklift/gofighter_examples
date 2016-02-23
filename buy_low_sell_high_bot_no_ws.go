@@ -9,6 +9,7 @@ package main
 import (
     "fmt"
     "math/rand"
+    "sync"
     "time"
 
     "github.com/fohristiwhirl/gofighter"        // go get -u github.com/fohristiwhirl/gofighter
@@ -23,17 +24,42 @@ const (
     WS_URL = "ws://127.0.0.1:8000/ob/api/ws"
 )
 
+var UnsafeQuote gofighter.Quote
+var Quote_MUTEX sync.Mutex
+
 // -----------------------------------------------------------------------------------------------
 
-func order_and_cancel(info gofighter.TradingInfo, order gofighter.ShortOrder) {
+func order_cancel_report(info gofighter.TradingInfo, order gofighter.ShortOrder, move_chan chan gofighter.Movement)  {
     res, err := gofighter.Execute(info, order, nil)
     if err != nil {
         fmt.Println(err)
+        move_chan <- gofighter.Movement{}       // For consistency, send message even on failure
         return
     }
     time.Sleep(5 * time.Second)
     id := res.Id
-    gofighter.Cancel(info, id)
+    res, err = gofighter.Cancel(info, id)
+    if err != nil {
+        fmt.Println(err)
+        move_chan <- gofighter.Movement{}       // For consistency, send message even on failure
+        return
+    }
+    move_chan <- gofighter.MoveFromOrder(res)
+    return
+}
+
+func quote_updater(info gofighter.TradingInfo)  {
+    for {
+        localquote, err := gofighter.GetQuote(info)   // this takes ages so can't lock before doing it
+        if err != nil {
+            time.Sleep(500 * time.Millisecond)
+            continue
+        }
+        Quote_MUTEX.Lock()
+        UnsafeQuote = localquote
+        Quote_MUTEX.Unlock()
+        time.Sleep(500 * time.Millisecond)
+    }
 }
 
 func main() {
@@ -47,44 +73,52 @@ func main() {
         WebSocketURL: WS_URL,
     }
 
-    // The market and position will be watched by 2 goroutines. In order to get info
-    // back from them, we create 2 channels that we can use to request the current
-    // state from them. We request the state by sending... a channel, of course.
+    go quote_updater(info)
 
-    market_queries := make(chan chan gofighter.Market)
-    go gofighter.MarketWatch(info, market_queries)
+    pos := gofighter.Position{}
 
-    position_queries := make(chan chan gofighter.Position)
-    go gofighter.PositionWatch(info, position_queries)
+    move_chan := make(chan gofighter.Movement)
 
     for {
-        market := gofighter.GetMarket(market_queries)   // Behind the scenes, this sends a channel
-                                                        // and gets the response through it.
-        if market.Quote.Last == -1 {
+        Quote_MUTEX.Lock()
+        localquote := UnsafeQuote
+        Quote_MUTEX.Unlock()
+
+        if localquote.Last == -1 {
             fmt.Printf("Waiting for market action to start...\n")
             time.Sleep(1 * time.Second)
             continue
         }
 
-        pos := gofighter.GetPosition(position_queries)  // So does this.
+        lastprice := localquote.Last
 
-        pos.Print(market.Quote.Last)
+        update_position:
+        for {
+            select {
+            case move := <- move_chan:
+                pos.UpdateFromMovement(move)
+            default:
+                break update_position
+            }
+        }
+
+        pos.Print(lastprice)
 
         var order gofighter.ShortOrder
         order.OrderType = "limit"
         order.Qty = 50 + rand.Intn(50)
         if pos.Shares > 0 || (pos.Shares == 0 && rand.Intn(2) == 0) {
             order.Direction = "sell"
-            order.Price = market.Quote.Last + 50
+            order.Price = lastprice + 50
         } else {
             order.Direction = "buy"
-            order.Price = market.Quote.Last - 50
+            order.Price = lastprice - 50
         }
         if order.Price < 0 {
             order.Price = 0
         }
 
-        go order_and_cancel(info, order)
+        go order_cancel_report(info, order, move_chan)
 
         time.Sleep(500 * time.Millisecond)
     }
