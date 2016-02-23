@@ -6,16 +6,14 @@ import (
 
 func main() {
 
-	// The following lines could be at the start of a real
-	// program to get the info required to play the level...
-
 	levelname := gofighter.NameFromUser()
 
 	start, _ := gofighter.GMstart("", levelname)
-	gofighter.SaveGMfile(levelname, start)
 
-	// If the GM response was already present, the following would
-	// be all that was needed (with the levelname set as above)...
+	// The response is saved in the gm/ folder so that we can load the essential info
+	// (account, venue, symbol) in the trading program, or whatever.
+
+	gofighter.SaveGMfile(levelname, start)
 
 	info := gofighter.TradingInfoFromName(levelname)
 	gofighter.PrintJSON(info)
