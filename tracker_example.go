@@ -8,19 +8,13 @@ import (
 	"github.com/fohristiwhirl/gofighter"
 )
 
-var INFO gofighter.TradingInfo = gofighter.TradingInfo{
-	BaseURL: "https://api.stockfighter.io/ob/api",
-	WebSocketURL: "wss://api.stockfighter.io/ob/api/ws",
-	Account: "EXB123456",
-	Venue: "TESTEX",
-	Symbol: "FOOBAR",
-}
-
 func main() {
+
+    info := gofighter.GetUserSelection("known_levels.json")
 
 	ex_chan := make(chan gofighter.Execution)
 
-	go gofighter.Tracker(INFO, ex_chan)
+	go gofighter.Tracker(info, ex_chan)
 
 	for n := 0 ; ; n++ {
 		msg := <- ex_chan

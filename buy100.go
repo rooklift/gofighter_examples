@@ -6,10 +6,7 @@ import (
 
 func main() {
 
-	// Assuming that game_start.exe has been run, this is all we need...
-
-	levelname := gofighter.NameFromUser()
-	info := gofighter.TradingInfoFromName(levelname)
+	info := gofighter.GetUserSelection("known_levels.json")
 
 	order := gofighter.ShortOrder{
 		Direction: "buy",

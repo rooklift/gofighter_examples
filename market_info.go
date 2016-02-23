@@ -11,10 +11,7 @@ import (
 
 func main()  {
 
-    // We assume game_start.exe has been called
-
-    levelname := gofighter.NameFromUser()
-    info := gofighter.TradingInfoFromName(levelname)
+    info := gofighter.GetUserSelection("known_levels.json")
 
     market_queries := make(chan chan gofighter.Market)
     go gofighter.MarketWatch(info, market_queries)
