@@ -14,6 +14,8 @@ import (
     "github.com/fohristiwhirl/gofighter"        // go get -u github.com/fohristiwhirl/gofighter
 )
 
+// This is set up to run on a server clone on localhost...
+
 const (
     ACCOUNT = "BLSHBOTS"
     VENUE = "TESTEX"

@@ -15,13 +15,14 @@ import (
     "github.com/fohristiwhirl/gofighter"        // go get -u github.com/fohristiwhirl/gofighter
 )
 
+// This is set up to run on a server clone on localhost...
+
 const (
     ACCOUNT = "BLSHBOTS"
     VENUE = "TESTEX"
     SYMBOL = "FOOBAR"
     KEY = "blshkey"
     BASE_URL = "http://127.0.0.1:8000/ob/api"   // No trailing slashes please
-    WS_URL = "ws://127.0.0.1:8000/ob/api/ws"
 )
 
 var UnsafeQuote gofighter.Quote
