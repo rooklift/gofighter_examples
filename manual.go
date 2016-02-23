@@ -317,8 +317,7 @@ func url(args []string)  {
 }
 
 func load(args []string)  {
-	levelname := gofighter.NameFromUser()
-	info = gofighter.TradingInfoFromName(levelname)
+	info := gofighter.GetUserSelection("known_levels.json")
 	gofighter.PrintJSON(info)
 }
 
