@@ -11,6 +11,9 @@ import (
 
 func main()  {
 
+    // The following assumes game_start.exe has already been called, and thus that
+    // there exists a file in the /gm/ directory which contains info about the level.
+
     info := gofighter.GetUserSelection("known_levels.json")
 
     market_queries := make(chan chan gofighter.Market)

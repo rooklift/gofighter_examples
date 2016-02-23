@@ -62,19 +62,26 @@ func main() {
     for {
         market := gofighter.GetMarket(market_queries)   // Behind the scenes, this sends a channel
                                                         // and gets the response through it.
+
+        // The .Last member of the quote gets set to -1 if not present in the JSON from the server,
+        // which usually means there is no activity yet...
+
         if market.Quote.Last == -1 {
             fmt.Printf("Waiting for market action to start...\n")
             time.Sleep(1 * time.Second)
             continue
         }
 
-        pos := gofighter.GetPosition(position_queries)  // So does this.
+        pos := gofighter.GetPosition(position_queries)  // This works like .GetMarket() above, but for position
 
-        pos.Print(market.Quote.Last)
+        pos.Print(market.Quote.Last)    // The argument here is the price to use when calculating NAV
 
         var order gofighter.ShortOrder
         order.OrderType = "limit"
         order.Qty = 50 + rand.Intn(50)
+
+        // Buy if short. Sell if long. If neither, flip a coin...
+
         if pos.Shares > 0 || (pos.Shares == 0 && rand.Intn(2) == 0) {
             order.Direction = "sell"
             order.Price = market.Quote.Last + 50

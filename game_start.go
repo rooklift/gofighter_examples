@@ -6,12 +6,14 @@ import (
 
 func main() {
 
-	levelname := gofighter.NameFromUser()
+	// First we use the list of known levels to get a level name from the user.
+	// Then we call the gamemaster to start that level.
 
+	levelname := gofighter.NameFromUser("known_levels.json")
 	start, _ := gofighter.GMstart("", levelname)
 
-	// The response is saved in the gm/ folder so that we can load the essential info
-	// (account, venue, symbol) in the trading program, or whatever.
+	// The response is saved in the /gm/ folder so that we can load the essential
+	// info (account, venue, symbol) in the trading program, or whatever.
 
 	gofighter.SaveGMfile(levelname, start)
 

@@ -5,11 +5,13 @@ import (
 )
 
 func main() {
-	
-	levelname := gofighter.NameFromUser()
+
+	// First we use the list of known levels to get a level name from the user.
+
+	levelname := gofighter.NameFromUser("known_levels.json")
 
 	// We load the original response we got when we started the game, this is
-	// located in the gm/ directory and containts the instance ID.
+	// located in the /gm/ directory and contains the instance ID.
 
 	level, _ := gofighter.LoadGMfile(levelname)
 

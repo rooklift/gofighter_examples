@@ -10,10 +10,15 @@ import (
 
 func main() {
 
+	// The following assumes game_start.exe has already been called, and thus that
+	// there exists a file in the /gm/ directory which contains info about the level.
+
     info := gofighter.GetUserSelection("known_levels.json")
 
-	ex_chan := make(chan gofighter.Execution)
+	// The Ticker goroutine called below is the direct interface to the server WebSocket.
+	// It simply sends executions down a channel at us.
 
+	ex_chan := make(chan gofighter.Execution)
 	go gofighter.Tracker(info, ex_chan)
 
 	for n := 0 ; ; n++ {
