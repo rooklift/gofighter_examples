@@ -376,6 +376,10 @@ func main()  {
 		fmt.Printf("> ")
 		ls := getlist()
 
+		if len(ls) == 0 {
+			continue
+		}
+
 		command := strings.ToLower(ls[0])
 
 		fn, ok := functions[command]
