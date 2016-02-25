@@ -1,5 +1,8 @@
 package main
 
+// This program allows the user to manually interact with a server - the official TESTEX to start with,
+// but the user can choose any server URL, API key, venue and stock. Type 'help' for available commands.
+
 import (
 	"bufio"
 	"fmt"
