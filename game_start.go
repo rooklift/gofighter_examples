@@ -10,7 +10,7 @@ func main() {
 	// Then we call the gamemaster to start that level.
 
 	levelname := gofighter.NameFromUser("known_levels.json")
-	start, _ := gofighter.GMstart("", levelname)
+	start, _ := gofighter.GMstart("", levelname)	// When given "", the function will use the API key from api_key.txt
 
 	// The response is saved in the /gm/ folder so that we can load the essential
 	// info (account, venue, symbol) in the trading program, or whatever.

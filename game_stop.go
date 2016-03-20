@@ -15,6 +15,6 @@ func main() {
 
 	level, _ := gofighter.LoadGMfile(levelname)
 
-	stop, _ := gofighter.GMstop("", level.InstanceId)
+	stop, _ := gofighter.GMstop("", level.InstanceId)	// When given "", the function will use the API key from api_key.txt
 	gofighter.PrintJSON(stop)
 }
